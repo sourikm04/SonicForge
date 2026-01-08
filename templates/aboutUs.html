@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SonicForge | Meet the Developers</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-color: #050505;
+            --card-bg: rgba(22, 27, 34, 0.6);
+            --nav-bg: rgba(5, 5, 5, 0.8);
+            --accent-primary: #6366f1;
+            /* Indigo */
+            --accent-secondary: #a855f7;
+            /* Purple */
+            --text-main: #ffffff;
+            --text-muted: #8b949e;
+            --border-color: rgba(255, 255, 255, 0.1);
+            --success: #2ea043;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            outline: none;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            position: relative;
+            perspective: 1000px;
+        }
+
+        /* --- Dynamic Canvas Background --- */
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        /* --- Navigation Bar --- */
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            min-height: 8vh;
+            padding: 0 5%;
+            background: var(--nav-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid var(--border-color);
+            opacity: 0;
+            animation: slideDown 0.8s ease-out forwards;
+        }
+
+        .logo {
+            color: var(--text-main);
+            font-weight: 700;
+            font-size: 1.5rem;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+
+        .logo:hover svg {
+            animation: pulseLogo 1s ease-in-out infinite;
+        }
+
+        .logo span:hover {
+            animation: glitch 0.3s cubic-bezier(.25, .46, .45, .94) both infinite;
+            color: var(--accent-primary);
+        }
+
+        .logo svg {
+            color: var(--accent-primary);
+            /* Added to match index.html */
+            transition: color 0.3s ease;
+        }
+
+        @keyframes glitch {
+            0% {
+                transform: translate(0)
+            }
+
+            20% {
+                transform: translate(-2px, 2px)
+            }
+
+            40% {
+                transform: translate(-2px, -2px)
+            }
+
+            60% {
+                transform: translate(2px, 2px)
+            }
+
+            80% {
+                transform: translate(2px, -2px)
+            }
+
+            100% {
+                transform: translate(0)
+            }
+        }
+
+        @keyframes pulseLogo {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 40px;
+            list-style: none;
+        }
+
+        .nav-links li {
+            position: relative;
+            opacity: 0;
+            animation: fadeIn 0.5s ease forwards 0.2s;
+        }
+
+        .nav-links a {
+            color: var(--text-main);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            /* Added spacing for icon */
+        }
+
+        .nav-links a svg {
+            width: 18px;
+            height: 18px;
+            transition: stroke 0.3s ease;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -5px;
+            left: 0;
+            background-color: var(--accent-secondary);
+            transition: width 0.3s ease;
+            box-shadow: 0 0 10px var(--accent-secondary);
+        }
+
+        .nav-links a:hover {
+            color: var(--accent-secondary);
+            text-shadow: 0 0 8px rgba(168, 85, 247, 0.4);
+        }
+
+        .nav-links a:hover svg {
+            stroke: var(--accent-secondary);
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .burger {
+            display: none;
+            cursor: pointer;
+        }
+
+        .burger div {
+            width: 25px;
+            height: 3px;
+            background-color: var(--text-main);
+            margin: 5px;
+            transition: all 0.3s ease;
+            border-radius: 2px;
+        }
+
+        /* --- Main Content: Team Grid --- */
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .page-title {
+            text-align: center;
+            margin-bottom: 60px;
+            opacity: 0;
+            animation: slideDown 0.8s ease forwards 0.3s;
+        }
+
+        h1 {
+            font-weight: 700;
+            font-size: clamp(2rem, 5vw, 3rem);
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #fff 0%, #a5b4fc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 1rem;
+        }
+
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            width: 100%;
+            padding: 10px;
+        }
+
+        /* --- Developer Card --- */
+        .dev-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            transition: all 0.3s ease;
+            opacity: 0;
+            animation: fadeInUp 0.8s ease forwards;
+
+            /* 3D Properties */
+            transform-style: preserve-3d;
+            will-change: transform;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Staggered animation */
+        .dev-card:nth-child(1) {
+            animation-delay: 0.4s;
+        }
+
+        .dev-card:nth-child(2) {
+            animation-delay: 0.6s;
+        }
+
+        .dev-card:nth-child(3) {
+            animation-delay: 0.8s;
+        }
+
+        .dev-card:nth-child(4) {
+            animation-delay: 1.0s;
+        }
+
+        /* Card Hover Glow */
+        .dev-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, transparent 100%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .dev-card:hover::before {
+            opacity: 1;
+        }
+
+        .dev-card:hover {
+            border-color: rgba(99, 102, 241, 0.4);
+            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Avatar */
+        .avatar-container {
+            width: 120px;
+            height: 120px;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
+            transform: translateZ(20px);
+        }
+
+        .avatar {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 3px solid var(--accent-primary);
+            object-fit: cover;
+            background: #0f1115;
+            transition: transform 0.3s ease;
+        }
+
+        .dev-card:hover .avatar {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
+        }
+
+        /* Text Content */
+        .dev-name {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 8px;
+            transform: translateZ(15px);
+            z-index: 1;
+        }
+
+        .dev-desc {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 25px;
+            line-height: 1.5;
+            transform: translateZ(10px);
+            z-index: 1;
+        }
+
+        /* Social Icons */
+        .social-links {
+            display: flex;
+            gap: 15px;
+            transform: translateZ(25px);
+            z-index: 1;
+        }
+
+        .social-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+
+        .social-btn:hover {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--accent-secondary);
+            border-color: var(--accent-primary);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(99, 102, 241, 0.2);
+        }
+
+        /* --- Footer --- */
+        footer {
+            text-align: center;
+            padding: 30px 20px;
+            background: rgba(5, 5, 5, 0.5);
+            border-top: 1px solid var(--border-color);
+            margin-top: auto;
+            opacity: 0;
+            animation: fadeIn 1.5s ease-out 1.2s forwards;
+        }
+
+        .footer-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .footer-content h3 {
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .footer-content p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        /* Animations */
+        @keyframes slideDown {
+            from {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                transform: translateY(40px) scale(0.95);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0) scale(1);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* Responsive */
+        @media screen and (max-width: 768px) {
+            .nav-links {
+                position: fixed;
+                right: 0;
+                height: 100vh;
+                top: 8vh;
+                background-color: rgba(5, 5, 5, 0.95);
+                backdrop-filter: blur(15px);
+                flex-direction: column;
+                align-items: center;
+                width: 100%;
+                transform: translateX(100%);
+                transition: transform 0.4s ease-in-out;
+                z-index: 99;
+                padding-top: 50px;
+            }
+
+            .nav-active {
+                transform: translateX(0%);
+            }
+
+            .nav-links li {
+                opacity: 1;
+                animation: none;
+            }
+
+            .burger {
+                display: block;
+            }
+
+            .toggle .line1 {
+                transform: rotate(-45deg) translate(-5px, 6px);
+            }
+
+            .toggle .line2 {
+                opacity: 0;
+            }
+
+            .toggle .line3 {
+                transform: rotate(45deg) translate(-5px, -6px);
+            }
+
+            /* Disable tilt on mobile for performance/UX */
+            .dev-card {
+                transform: none !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <canvas id="bg-canvas"></canvas>
+
+    <nav>
+        <a href="{{ url_for('home') }}" class="logo" style="text-decoration: none;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 12h2"></path>
+                <path d="M6 12v-3"></path>
+                <path d="M10 18V6"></path>
+                <path d="M14 15V9"></path>
+                <path d="M18 12h2"></path>
+            </svg>
+            <span>SonicForge</span>
+        </a>
+        <ul class="nav-links">
+            <li>
+                <a href="{{ url_for('home') }}">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                    </svg>
+                    Home
+                </a>
+            </li>
+        </ul>
+        <div class="burger">
+            <div class="line1"></div>
+            <div class="line2"></div>
+            <div class="line3"></div>
+        </div>
+    </nav>
+
+    <main>
+        <div class="page-title">
+            <h1>Meet the <span style="color:var(--accent-secondary)">Architects</span></h1>
+            <p class="subtitle">The minds bridging the gap between neural networks and melody.</p>
+        </div>
+
+        <div class="team-grid">
+            <div class="dev-card tilt-card">
+                <div class="avatar-container">
+                    <img src="{{ url_for('static', filename='images/Ankana.jpg') }}" alt="Ankana" class="avatar">
+                </div>
+                <h2 class="dev-name">Ankana Debnath</h2>
+                <p class="dev-desc">Designed a high-impact presentation to communicate key project insights.</p>
+                <div class="social-links">
+                    <a href="http://www.linkedin.com/in/ankana05" class="social-btn" title="LinkedIn"><svg
+                            xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z">
+                            </path>
+                            <rect x="2" y="9" width="4" height="12"></rect>
+                            <circle cx="4" cy="4" r="2"></circle>
+                        </svg></a>
+                    <a href="http://github.com/aankana" class="social-btn" title="GitHub"><svg
+                            xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path
+                                d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22">
+                            </path>
+                        </svg></a>
+                    <a href="mailto:ankanadebnath2@gmail.com" class="social-btn" title="Email"><svg
+                            xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z">
+                            </path>
+                            <polyline points="22,6 12,13 2,6"></polyline>
+                        </svg></a>
+                </div>
+            </div>
+
+            <div class="dev-card tilt-card">
+                <div class="avatar-container">
+                    <img src="{{ url_for('static', filename='images/Sourik.jpg') }}" alt="Sourik" class="avatar">
+                </div>
+                <h2 class="dev-name">Sourik Majumdar</h2>
+                <p class="dev-desc">UI/UX Designer crafting immersive and responsive glassmorphism interfaces.</p>
+                <div class="social-links">
+                    <a href="https://www.linkedin.com/in/sourikm04/" class="social-btn"><svg
+                            xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z">
+                            </path>
+                            <rect x="2" y="9" width="4" height="12"></rect>
+                            <circle cx="4" cy="4" r="2"></circle>
+                        </svg></a>
+                    <a href="https://github.com/sourikm04" class="social-btn"><svg xmlns="http://www.w3.org/2000/svg"
+                            width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path
+                                d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22">
+                            </path>
+                        </svg></a>
+                    <a href="mailto:sourikmajumdar14@gmail.com" class="social-btn"><svg
+                            xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z">
+                            </path>
+                            <polyline points="22,6 12,13 2,6"></polyline>
+                        </svg></a>
+                </div>
+            </div>
+
+            <div class="dev-card tilt-card">
+                <div class="avatar-container">
+                    <img src="{{ url_for('static', filename='images/Aditya.jpg') }}" alt="Aditya" class="avatar">
+                </div>
+                <h2 class="dev-name">Aditya Kiran Modak</h2>
+                <p class="dev-desc">Backend developer, engineers the robust and scalable engine that powers our entire
+                    platform.
+                </p>
+                <div class="social-links">
+                    <a href="http://www.linkedin.com/in/aditya-kiran-modak-5a51172a8" class="social-btn"><svg
+                            xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z">
+                            </path>
+                            <rect x="2" y="9" width="4" height="12"></rect>
+                            <circle cx="4" cy="4" r="2"></circle>
+                        </svg></a>
+                    <a href="https://github.com/GenomeHykis" class="social-btn"><svg xmlns="http://www.w3.org/2000/svg"
+                            width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path
+                                d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22">
+                            </path>
+                        </svg></a>
+                    <a href="mailto:adityakiran694@gmail.com" class="social-btn"><svg xmlns="http://www.w3.org/2000/svg"
+                            width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z">
+                            </path>
+                            <polyline points="22,6 12,13 2,6"></polyline>
+                        </svg></a>
+                </div>
+            </div>
+
+            <div class="dev-card tilt-card">
+                <div class="avatar-container">
+                    <img src="{{ url_for('static', filename='images/Atrik.jpg') }}" alt="Atrik" class="avatar">
+                </div>
+                <h2 class="dev-name">Atrik Mondal</h2>
+                <p class="dev-desc">Data Scientist handling model training, datasets, and optimization.</p>
+                <div class="social-links">
+                    <a href="https://www.linkedin.com/in/atrik-mondal-4b0999334/" class="social-btn"><svg
+                            xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z">
+                            </path>
+                            <rect x="2" y="9" width="4" height="12"></rect>
+                            <circle cx="4" cy="4" r="2"></circle>
+                        </svg></a>
+                    <a href="https://github.com/atrikmon7" class="social-btn"><svg xmlns="http://www.w3.org/2000/svg"
+                            width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path
+                                d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22">
+                            </path>
+                        </svg></a>
+                    <a href="mailto:srabantimondal247@gmail.com" class="social-btn"><svg
+                            xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z">
+                            </path>
+                            <polyline points="22,6 12,13 2,6"></polyline>
+                        </svg></a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <h3>Democratizing Creativity</h3>
+            <p>Built for the GDGC-MSIT Winter Solstice Hackathon 2026. This project aims to bridge the gap between
+                imagination and
+                reality by bringing state-of-the-art neural audio synthesis directly to your browser.</p>
+        </div>
+    </footer>
+
+    <script>
+        // --- 1. Dynamic Particle Background ---
+        const initParticles = () => {
+            const canvas = document.getElementById('bg-canvas');
+            const ctx = canvas.getContext('2d');
+            let particlesArray;
+
+            let mouse = { x: null, y: null, radius: 100 };
+
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            window.addEventListener('mousemove', function (event) {
+                mouse.x = event.x;
+                mouse.y = event.y;
+            });
+            window.addEventListener('mouseout', function () {
+                mouse.x = undefined; mouse.y = undefined;
+            });
+
+            class Particle {
+                constructor(x, y, directionX, directionY, size, color) {
+                    this.x = x; this.y = y; this.directionX = directionX; this.directionY = directionY; this.size = size; this.color = color;
+                }
+                draw() {
+                    ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2, false); ctx.fillStyle = this.color; ctx.fill();
+                }
+                update() {
+                    if (this.x > canvas.width || this.x < 0) this.directionX = -this.directionX;
+                    if (this.y > canvas.height || this.y < 0) this.directionY = -this.directionY;
+
+                    // Collision detection
+                    let dx = mouse.x - this.x; let dy = mouse.y - this.y;
+                    let distance = Math.sqrt(dx * dx + dy * dy);
+
+                    if (distance < mouse.radius + this.size) {
+                        if (mouse.x < this.x && this.x < canvas.width - this.size * 10) this.x += 5;
+                        if (mouse.x > this.x && this.x > this.size * 10) this.x -= 5;
+                        if (mouse.y < this.y && this.y < canvas.height - this.size * 10) this.y += 5;
+                        if (mouse.y > this.y && this.y > this.size * 10) this.y -= 5;
+                    }
+
+                    this.x += this.directionX; this.y += this.directionY;
+                    this.draw();
+                }
+            }
+
+            function init() {
+                particlesArray = [];
+                let numberOfParticles = (canvas.height * canvas.width) / 9000;
+                for (let i = 0; i < numberOfParticles; i++) {
+                    let size = (Math.random() * 2) + 1;
+                    let x = (Math.random() * ((innerWidth - size * 2) - (size * 2)) + size * 2);
+                    let y = (Math.random() * ((innerHeight - size * 2) - (size * 2)) + size * 2);
+                    let directionX = (Math.random() * 0.4) - 0.2;
+                    let directionY = (Math.random() * 0.4) - 0.2;
+                    let color = 'rgba(99, 102, 241, 0.4)';
+                    particlesArray.push(new Particle(x, y, directionX, directionY, size, color));
+                }
+            }
+
+            function connect() {
+                for (let a = 0; a < particlesArray.length; a++) {
+                    for (let b = a; b < particlesArray.length; b++) {
+                        let distance = ((particlesArray[a].x - particlesArray[b].x) * (particlesArray[a].x - particlesArray[b].x)) +
+                            ((particlesArray[a].y - particlesArray[b].y) * (particlesArray[a].y - particlesArray[b].y));
+                        if (distance < (canvas.width / 7) * (canvas.height / 7)) {
+                            let opacityValue = 1 - (distance / 20000);
+                            ctx.strokeStyle = 'rgba(168, 85, 247,' + opacityValue + ')';
+                            ctx.lineWidth = 1;
+                            ctx.beginPath(); ctx.moveTo(particlesArray[a].x, particlesArray[a].y); ctx.lineTo(particlesArray[b].x, particlesArray[b].y); ctx.stroke();
+                        }
+                    }
+                }
+            }
+
+            function animate() {
+                requestAnimationFrame(animate); ctx.clearRect(0, 0, innerWidth, innerHeight);
+                for (let i = 0; i < particlesArray.length; i++) { particlesArray[i].update(); }
+                connect();
+            }
+
+            window.addEventListener('resize', function () { canvas.width = innerWidth; canvas.height = innerHeight; init(); });
+            init(); animate();
+        }
+
+        // --- 2. 3D Tilt Effect for Multiple Cards ---
+        const cards = document.querySelectorAll('.tilt-card');
+
+        document.addEventListener('mousemove', (e) => {
+            if (window.innerWidth <= 768) return;
+
+            const xAxis = (window.innerWidth / 2 - e.pageX) / 40; // Adjusted sensitivity
+            const yAxis = (window.innerHeight / 2 - e.pageY) / 40;
+
+            cards.forEach(card => {
+                card.style.transform = `rotateY(${xAxis}deg) rotateX(${yAxis}deg)`;
+            });
+        });
+
+        // Reset on mouse leave
+        document.addEventListener('mouseleave', () => {
+            cards.forEach(card => {
+                card.style.transform = `rotateY(0deg) rotateX(0deg)`;
+                card.style.transition = 'all 0.5s ease';
+            });
+        });
+
+        document.addEventListener('mouseenter', () => {
+            cards.forEach(card => {
+                card.style.transition = 'none';
+            });
+        });
+
+        // --- 3. Mobile Nav ---
+        const navSlide = () => {
+            const burger = document.querySelector('.burger');
+            const nav = document.querySelector('.nav-links');
+            const navLinks = document.querySelectorAll('.nav-links li');
+
+            burger.addEventListener('click', () => {
+                nav.classList.toggle('nav-active');
+                navLinks.forEach((link, index) => {
+                    if (link.style.animation) { link.style.animation = ''; } else { link.style.animation = `navLinkFade 0.5s ease forwards ${index / 7 + 0.3}s`; }
+                });
+                burger.classList.toggle('toggle');
+            });
+        }
+
+        // Initialize
+        window.addEventListener('load', () => {
+            initParticles();
+            navSlide();
+        });
+
+    </script>
+</body>
+
+</html>
