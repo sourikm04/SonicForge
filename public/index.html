@@ -10,6 +10,14 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
+        html{
+        max-width: 100%;
+        overflow-x: hidden;
+        overscroll-behavior-y: none;
+        position: relative;
+        height: 100%;                
+        }
+        
         :root {
             --bg-color: #050505;
             --card-bg: rgba(22, 27, 34, 0.6);
@@ -31,7 +39,6 @@
             margin: 0;
             padding: 0;
             outline: none;
-            /* Standard cursor restored */
         }
 
         body {
@@ -43,8 +50,6 @@
             flex-direction: column;
             overflow-x: hidden;
             position: relative;
-            perspective: 1000px;
-            /* Essential for 3D tilt */
         }
 
         /* --- Dynamic Canvas Background --- */
@@ -131,7 +136,7 @@
         }
 
         .logo svg {
-            color: var(--accent-primary); /* Ensures consistent color */
+            color: var(--accent-primary);
             transition: color 0.3s ease;
         }
 
@@ -165,7 +170,7 @@
             transition: all 0.3s ease;
             display: flex;
             align-items: center;
-            gap: 8px; /* Space between icon and text */
+            gap: 8px;
         }
 
         .nav-links a svg {
@@ -222,6 +227,7 @@
             align-items: center;
             padding: 20px;
             width: 100%;
+            perspective: 1000px;
         }
 
         /* --- Studio Card with 3D Tilt --- */
@@ -242,8 +248,6 @@
             align-items: center;
             opacity: 0;
             animation: fadeInUp 1s ease-out 0.5s forwards;
-
-            /* Prepare for 3D transform */
             transform-style: preserve-3d;
             will-change: transform;
         }
@@ -314,7 +318,6 @@
             opacity: 0;
             animation: fadeIn 1s ease 1.5s forwards;
             transform: translateZ(15px);
-            /* 3D Depth */
         }
 
         /* Input Group */
@@ -325,7 +328,6 @@
             opacity: 0;
             animation: slideUpFade 0.8s ease 1.8s forwards;
             transform: translateZ(25px);
-            /* 3D Depth */
         }
 
         input[type="text"] {
@@ -399,7 +401,6 @@
             border-radius: 5px;
             background-image: linear-gradient(var(--accent-primary), var(--accent-primary));
             background-size: 0% 100%;
-            /* JS will update this for fill effect */
             background-repeat: no-repeat;
             cursor: pointer;
             border: 1px solid var(--border-color);
@@ -415,7 +416,6 @@
             cursor: pointer;
             transition: transform 0.2s;
             margin-top: -1px;
-            /* Align slightly if needed */
         }
 
         input[type="range"]::-webkit-slider-thumb:hover {
@@ -641,6 +641,8 @@
             margin-top: auto;
             opacity: 0;
             animation: fadeIn 1.5s ease-out 2.5s forwards;
+            position: relative; 
+            z-index: 10;
         }
 
         .footer-content {
@@ -660,14 +662,17 @@
             color: var(--text-muted);
             font-size: 0.9rem;
             line-height: 1.6;
+            margin-bottom: 0;
         }
 
         /* Toast Notification */
         .toast {
             position: fixed;
-            bottom: 30px;
+            bottom: 15%; 
             left: 50%;
-            transform: translateX(-50%) translateY(100px);
+            transform: translateX(-50%) translateY(20px);
+            opacity: 0;
+            visibility: hidden;
             background: #21262d;
             border: 1px solid var(--border-color);
             padding: 12px 24px;
@@ -677,12 +682,14 @@
             align-items: center;
             gap: 10px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            z-index: 100;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 1000;
         }
 
         .toast.show {
             transform: translateX(-50%) translateY(0);
+            opacity: 1;
+            visibility: visible;
         }
 
         .toast.error {
@@ -751,8 +758,8 @@
             .nav-links {
                 position: fixed;
                 right: 0px;
-                height: 100vh;
                 top: 8vh;
+                height: calc(100vh - 8vh);
                 background-color: rgba(5, 5, 5, 0.95);
                 backdrop-filter: blur(15px);
                 display: flex;
@@ -765,6 +772,7 @@
                 justify-content: flex-start;
                 padding-top: 50px;
                 gap: 30px;
+                overflow-y: auto;
             }
 
             .nav-links li {
@@ -786,8 +794,6 @@
                 transform: none !important;
             }
 
-            /* Disable tilt on mobile */
-
             .toggle .line1 {
                 transform: rotate(-45deg) translate(-5px, 6px);
             }
@@ -807,7 +813,7 @@
 
     <canvas id="bg-canvas"></canvas>
     <nav>
-        <a href="{{ url_for('home') }}" class="logo" style="text-decoration: none;">
+        <a href="/" class="logo" style="text-decoration: none;">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M2 12h2"></path>
@@ -820,13 +826,13 @@
         </a>
         <ul class="nav-links">
             <li>
-                <a href="{{ url_for('home') }}" class="active">
+                <a href="/" class="active">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
                     Home
                 </a>
             </li>
             <li>
-                <a href="{{ url_for('about') }}">
+                <a href="/aboutUs.html">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
                     The Architects
                 </a>
@@ -889,6 +895,10 @@
         </div>
     </main>
 
+    <div id="toast" class="toast">
+        <span id="toastMsg"></span>
+    </div>
+
     <footer>
         <div class="footer-content">
             <h3>Democratizing Creativity</h3>
@@ -897,10 +907,6 @@
                 reality by bringing state-of-the-art neural audio synthesis directly to your browser.</p>
         </div>
     </footer>
-
-    <div id="toast" class="toast">
-        <span id="toastMsg">Notification</span>
-    </div>
 
     <script>
         // --- 0. 3D Tilt Effect ---
@@ -912,18 +918,16 @@
             const xAxis = (window.innerWidth / 2 - e.pageX) / 25;
             const yAxis = (window.innerHeight / 2 - e.pageY) / 25;
 
-            // Apply slight rotation based on mouse pos
             card.style.transform = `rotateY(${xAxis}deg) rotateX(${yAxis}deg)`;
         });
 
-        // Reset on mouse leave
         document.addEventListener('mouseleave', () => {
             card.style.transform = `rotateY(0deg) rotateX(0deg)`;
             card.style.transition = 'all 0.5s ease';
         });
 
         document.addEventListener('mouseenter', () => {
-            card.style.transition = 'none'; // Remove transition for instant responsiveness
+            card.style.transition = 'none';
         });
 
 
@@ -933,7 +937,6 @@
             const ctx = canvas.getContext('2d');
             let particlesArray;
 
-            // Mouse interaction object
             let mouse = {
                 x: null,
                 y: null,
@@ -943,7 +946,6 @@
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
 
-            // Track mouse position
             window.addEventListener('mousemove', function (event) {
                 mouse.x = event.x;
                 mouse.y = event.y;
@@ -977,7 +979,6 @@
                         this.directionY = -this.directionY;
                     }
 
-                    // Collision detection
                     let dx = mouse.x - this.x;
                     let dy = mouse.y - this.y;
                     let distance = Math.sqrt(dx * dx + dy * dy);
@@ -1142,7 +1143,6 @@
             updateSliderBg();
         });
 
-        // Init slider bg
         updateSliderBg();
 
         // --- 6. Music Generation Logic ---
@@ -1164,12 +1164,12 @@
 
             try {
                 // 2. Fetch Logic
-                const response = await fetch('/generate', {
+                const response = await fetch('https://sourikm04-sonicforge-backend.hf.space/generate', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         prompt: promptInput.value,
-                        duration: parseInt(durationInput.value) || 10 // Send duration
+                        duration: parseInt(durationInput.value) || 10
                     })
                 });
 
